@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.zip.DataFormatException;
 
@@ -34,21 +35,35 @@ public class Account {
     String nextLine = "";
     while (in.hasNextLine())
       this.addTransactionGroup(in.nextLine());
-    in.close();
-  }
+    
+    }
+   
+    
+
 
   public int getId() {
     return this.UNIQUE_ID;
   }
 
-  public void addTransactionGroup(String command){
+  public void addTransactionGroup(String command)
+      throws DataFormatException, NumberFormatException {
     String[] parts = command.split(" ");
     int[] newTransactions = new int[parts.length];
-    for (int i = 0; i < parts.length; i++)
-      newTransactions[i] = Integer.parseInt(parts[i]);
-    TransactionGroup t = new TransactionGroup(newTransactions);
-    this.transactionGroups[this.transactionGroupsCount] = t;
-    this.transactionGroupsCount++;
+
+    try {
+      for (int i = 0; i < parts.length; i++)
+        newTransactions[i] = Integer.parseInt(parts[i]);
+      TransactionGroup t = new TransactionGroup(newTransactions);
+      this.transactionGroups[this.transactionGroupsCount] = t;
+      this.transactionGroupsCount++;
+    } catch (NumberFormatException e) {
+      throw new DataFormatException(
+          "addTransactionGroup requires string commands that contain only space separated integer values");
+    } catch (DataFormatException | OutOfMemoryError e) {
+      System.out.println(e);
+    } finally {
+    }
+
   }
 
   public int getTransactionCount() {
@@ -59,6 +74,7 @@ public class Account {
   }
 
   public int getTransactionAmount(int index) {
+    try {
     int transactionCount = 0;
     for (int i = 0; i < this.transactionGroupsCount; i++) {
       int prevTransactionCount = transactionCount;
@@ -67,7 +83,14 @@ public class Account {
         index -= prevTransactionCount;
         return this.transactionGroups[i].getTransactionAmount(index);
       }
+
     }
+    }
+    catch(IndexOutOfBoundsException e) {
+      System.out.println(e);
+    }
+    finally {}
+
     return -1;
   }
 
